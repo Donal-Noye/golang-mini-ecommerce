@@ -1,0 +1,23 @@
+services:
+  ecommerce-postgres:
+    image: postgres:18.1-bookworm
+    container_name: ecommerce-env-postgres
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - ./out/pgdata:/var/lib/postgresql
+    restart: always
+
+  ecommerce-postgres-migrate:
+    image: migrate/migrate:v4.19.1
+    volumes:
+      - ./migrations:/migrations
+
+  port-forwarder:
+    image: alpine/socat:1.8.0.3
+    container_name: ecommerce-postgres-port-forwarder
+    command: tcp-listen:5432,reuseaddr tcp-connect:ecommerce-postgres:5432
+    ports:
+      - "127.0.0.1:5432:5432"
